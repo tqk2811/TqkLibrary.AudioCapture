@@ -1,6 +1,6 @@
 ﻿namespace TqkLibrary.AudioCapture.Interfaces
 {
-    public interface IAudioSystemCapture
+    public interface IAudioSystemCapture : IAudioProcessCapture
     {
     }
 }

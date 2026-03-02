@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="..\packages\TqkLibrary.FFmpeg.GplShared.6.1.1.3\build\TqkLibrary.FFmpeg.GplShared.props" Condition="Exists('..\packages\TqkLibrary.FFmpeg.GplShared.6.1.1.3\build\TqkLibrary.FFmpeg.GplShared.props')" />
   <ItemGroup Label="ProjectConfigurations">
     <ProjectConfiguration Include="Debug|Win32">
       <Configuration>Debug</Configuration>
@@ -151,7 +152,15 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
     </ClCompile>
   </ItemGroup>
+  <ItemGroup>
+    <None Include="packages.config" />
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
-  <ImportGroup Label="ExtensionTargets">
-  </ImportGroup>
+  <ImportGroup Label="ExtensionTargets" />
+  <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
+    <PropertyGroup>
+      <ErrorText>This project references NuGet package(s) that are missing on this computer. Use NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
+    </PropertyGroup>
+    <Error Condition="!Exists('..\packages\TqkLibrary.FFmpeg.GplShared.6.1.1.3\build\TqkLibrary.FFmpeg.GplShared.props')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\TqkLibrary.FFmpeg.GplShared.6.1.1.3\build\TqkLibrary.FFmpeg.GplShared.props'))" />
+  </Target>
 </Project>

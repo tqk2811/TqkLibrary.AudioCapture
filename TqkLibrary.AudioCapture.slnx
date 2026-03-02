@@ -4,6 +4,6 @@
     <Platform Name="x64" />
     <Platform Name="x86" />
   </Configurations>
-  <Project Path="TqkLibrary.AudioCapture.Native/TqkLibrary.AudioCapture.Native.vcxproj" />
+  <Project Path="TqkLibrary.AudioCapture.Native/TqkLibrary.AudioCapture.Native.vcxproj" Id="63acb146-144e-486a-84ec-8fe4860dc948" />
   <Project Path="TqkLibrary.AudioCapture/TqkLibrary.AudioCapture.csproj" />
 </Solution>
