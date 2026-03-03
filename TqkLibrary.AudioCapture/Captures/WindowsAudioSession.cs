@@ -7,7 +7,7 @@ using TqkLibrary.AudioCapture.Interfaces;
 
 namespace TqkLibrary.AudioCapture.Captures
 {
-    public class WindowsAudioSession : BaseAudioCapture, IAudioProcessCapture, IAudioSystemCapture
-    {
-    }
+    //public class WindowsAudioSession : BaseAudioCapture, IAudioProcessCapture, IAudioSystemCapture
+    //{
+    //}
 }

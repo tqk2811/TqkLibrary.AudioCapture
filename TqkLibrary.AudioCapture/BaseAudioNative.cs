@@ -12,6 +12,7 @@ using TqkLibrary.AudioCapture.Interfaces;
 
 namespace TqkLibrary.AudioCapture
 {
+    public delegate void ReleaseNative(ref IntPtr pointer);
     public abstract class BaseAudioNative
     {
         protected const string _dllName = "TqkLibrary.AudioCapture.Native.dll";
