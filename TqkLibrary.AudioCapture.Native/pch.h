@@ -10,4 +10,18 @@
 // add headers that you want to pre-compile here
 #include "framework.h"
 
+#include <mmdeviceapi.h>
+#include <audioclient.h>
+#include <audiopolicy.h>
+#include <functiondiscoverykeys_devpkey.h>
+#include <wrl.h>
+#include <vector>
+#include <string>
+#include <memory>
+
+#pragma comment(lib, "ole32.lib")
+#pragma comment(lib, "uuid.lib")
+#pragma comment(lib, "avrt.lib")
+
 #endif //PCH_H
+
