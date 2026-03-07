@@ -11,4 +11,8 @@
 		<ProjectReference Include="..\TqkLibrary.AudioCapture\TqkLibrary.AudioCapture.csproj" />
 	</ItemGroup>
 
+	<ItemGroup>
+	  <PackageReference Include="TqkLibrary.AudioPlayer.XAudio2" Version="1.0.1" />
+	</ItemGroup>
+
 </Project>

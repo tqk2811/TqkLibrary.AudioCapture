@@ -2,6 +2,7 @@
 using TqkLibrary.AudioCapture;
 using TqkLibrary.AudioCapture.Enums;
 using TqkLibrary.AudioCapture.Models;
+using TqkLibrary.AudioPlayer.XAudio2;
 
 namespace ConsoleTest
 {
@@ -90,27 +91,65 @@ namespace ConsoleTest
         {
             using (stream)
             {
+                Console.Write("\nEnable Live Monitor (Playback)? (y/n): ");
+                bool enablePlayback = Console.ReadLine()?.ToLower() == "y";
+
                 Console.WriteLine($"\nStarting capture: {stream.Format}");
                 Console.WriteLine("Press any key to stop...");
 
                 string fileName = $"capture_{DateTime.Now:yyyyMMdd_HHmmss}.raw";
                 using var fs = File.Create(fileName);
                 byte[] buffer = new byte[stream.Format.BytesPerSecond / 10]; // 100ms buffer
-                
-                Stopwatch sw = Stopwatch.StartNew();
-                Task.Run(() =>
+
+                XAudio2Engine? engine = null;
+                XAudio2MasterVoice? masterVoice = null;
+                XAudio2SourceVoice? sourceVoice = null;
+
+                if (enablePlayback)
                 {
-                    while (!Console.KeyAvailable && stream.CanRead)
+                    try
                     {
-                        int read = stream.Read(buffer, 0, buffer.Length);
-                        if (read > 0)
+                        engine = new XAudio2Engine();
+                        masterVoice = engine.CreateMasterVoice();
+                        sourceVoice = masterVoice.CreateSourceVoice(
+                            (uint)stream.Channels,
+                            (uint)stream.SampleRate,
+                            (uint)stream.BitsPerSample);
+                        sourceVoice.Start();
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.WriteLine($"Failed to init XAudio2: {ex.Message}");
+                        enablePlayback = false;
+                    }
+                }
+
+                Stopwatch sw = Stopwatch.StartNew();
+                CancellationTokenSource cts = new CancellationTokenSource();
+                var captureTask = Task.Run(() =>
+                {
+                    try
+                    {
+                        while (!cts.IsCancellationRequested && stream.CanRead)
                         {
-                            fs.Write(buffer, 0, read);
+                            int read = stream.Read(buffer, 0, buffer.Length);
+                            if (read > 0)
+                            {
+                                fs.Write(buffer, 0, read);
+                                if (enablePlayback && sourceVoice != null)
+                                {
+                                    sourceVoice.QueueFrame(buffer, (uint)read);
+                                }
+                            }
+                            else
+                            {
+                                Thread.Sleep(10);
+                            }
                         }
-                        else
-                        {
-                            Thread.Sleep(10);
-                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.WriteLine($"Capture Error: {ex.Message}");
                     }
                 });
 
@@ -120,8 +159,16 @@ namespace ConsoleTest
                     Thread.Sleep(500);
                 }
                 Console.ReadKey(true);
+                cts.Cancel();
+                captureTask.Wait();
+
+                sourceVoice?.Dispose();
+                masterVoice?.Dispose();
+                engine?.Dispose();
+
                 Console.WriteLine($"\nStopped. Saved to {fileName}");
             }
         }
     }
 }
+
