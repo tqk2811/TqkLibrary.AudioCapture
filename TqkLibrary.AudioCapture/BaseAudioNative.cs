@@ -1,40 +1,37 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Drawing;
-using System.Linq;
+using System.IO;
 using System.Reflection;
 using System.Runtime.InteropServices;
-using System.Text;
-using System.Text.RegularExpressions;
-using System.Threading;
-using System.Threading.Tasks;
-using TqkLibrary.AudioCapture.Interfaces;
 
 namespace TqkLibrary.AudioCapture
 {
     public delegate void ReleaseNative(ref IntPtr pointer);
-    public abstract class BaseAudioNative
+    public abstract class BaseAudioNative : IDisposable
     {
         protected const string _dllName = "TqkLibrary.AudioCapture.Native.dll";
 #if DEBUG && NETFRAMEWORK
         static BaseAudioNative()
         {
-            string path = Path.Combine(
-                Path.GetDirectoryName(Assembly.GetEntryAssembly()!.Location)!,
-                "runtimes",
-                Environment.Is64BitProcess ? "win-x64" : "win-x86",
-                "native"
-                );
+            try
+            {
+                string path = Path.Combine(
+                    Path.GetDirectoryName(Assembly.GetEntryAssembly()?.Location ?? Assembly.GetExecutingAssembly().Location)!,
+                    "runtimes",
+                    Environment.Is64BitProcess ? "win-x64" : "win-x86",
+                    "native"
+                    );
 
-            bool r = SetDllDirectory(path);
-            if (!r)
-                throw new InvalidOperationException("Can't set Kernel32.SetDllDirectory");
+                if (Directory.Exists(path))
+                {
+                    SetDllDirectory(path);
+                }
+            }
+            catch { }
         }
 
         [DllImport("Kernel32.dll", CharSet = CharSet.Unicode, CallingConvention = CallingConvention.Winapi)]
         internal static extern bool SetDllDirectory(string PathName);
 #endif
-
 
         protected IntPtr Pointer { get { return _pointer; } }
         private IntPtr _pointer;
@@ -60,7 +57,11 @@ namespace TqkLibrary.AudioCapture
 
         protected virtual void Dispose(bool disposing)
         {
-            _releaseNative.Invoke(ref _pointer);
+            if (_pointer != IntPtr.Zero)
+            {
+                _releaseNative.Invoke(ref _pointer);
+            }
         }
     }
 }
+
