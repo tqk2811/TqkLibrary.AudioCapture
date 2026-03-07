@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<package xmlns="http://schemas.microsoft.com/asset/2010/07/nuspec.xsd">
+  <metadata>
+    <id>TqkLibrary.AudioCapture</id>
+    <version>$version$</version>
+    <authors>tqk2811</authors>
+    <description>Audio Capture library for Windows using WASAPI. Supports endpoint and process-specific capture.</description>
+    <license type="expression">MIT</license>
+    <dependencies>
+      <group targetFramework=".NETFramework4.6.2" />
+      <group targetFramework="net8.0-windows7.0" />
+    </dependencies>
+  </metadata>
+  <files>
+    <file src="TqkLibrary.AudioCapture\bin\Release\net462\TqkLibrary.AudioCapture.dll" target="lib\net462\" />
+    <file src="TqkLibrary.AudioCapture\bin\Release\net8.0-windows7.0\TqkLibrary.AudioCapture.dll" target="lib\net8.0-windows7.0\" />
+
+    <file src="TqkLibrary.AudioCapture.Native\Release\TqkLibrary.AudioCapture.Native.dll" target="runtimes\win-x86\native\" />
+    <file src="TqkLibrary.AudioCapture.Native\x64\Release\TqkLibrary.AudioCapture.Native.dll" target="runtimes\win-x64\native\" />
+
+    <file src="TqkLibrary.AudioCapture.targets" target="build\" />
+  </files>
+</package>

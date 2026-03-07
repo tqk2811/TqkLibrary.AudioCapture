@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Condition="'$(Platform)' == 'x64' OR '$(Platform)' == 'AnyCPU'">
+    <None Include="$(MSBuildThisFileDirectory)..\runtimes\win-x64\native\TqkLibrary.AudioCapture.Native.dll">
+      <Link>TqkLibrary.AudioCapture.Native.dll</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <PublishState>Included</PublishState>
+      <Visible>False</Visible>
+      <Pack>false</Pack>
+    </None>
+  </ItemGroup>
+  <ItemGroup Condition="'$(Platform)' == 'x86' OR ('$(Platform)' == 'AnyCPU' AND '$(Prefer32Bit)' == 'true')">
+    <None Include="$(MSBuildThisFileDirectory)..\runtimes\win-x86\native\TqkLibrary.AudioCapture.Native.dll">
+      <Link>TqkLibrary.AudioCapture.Native.dll</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <PublishState>Included</PublishState>
+      <Visible>False</Visible>
+      <Pack>false</Pack>
+    </None>
+  </ItemGroup>
+</Project>
