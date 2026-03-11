@@ -12,6 +12,7 @@
 
 #include <mmdeviceapi.h>
 #include <audioclient.h>
+#include <audioclientactivationparams.h>
 #include <audiopolicy.h>
 #include <functiondiscoverykeys_devpkey.h>
 #include <wrl.h>
@@ -22,6 +23,7 @@
 #pragma comment(lib, "ole32.lib")
 #pragma comment(lib, "uuid.lib")
 #pragma comment(lib, "avrt.lib")
+#pragma comment(lib, "mmdevapi.lib")
 
 #endif //PCH_H
 

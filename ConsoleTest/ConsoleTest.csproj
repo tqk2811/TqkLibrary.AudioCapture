@@ -5,6 +5,7 @@
 		<TargetFrameworks>net8.0-windows7.0</TargetFrameworks>
 		<ImplicitUsings>enable</ImplicitUsings>
 		<Nullable>enable</Nullable>
+		<Platforms>AnyCPU;x64</Platforms>
 	</PropertyGroup>
 
 	<ItemGroup>
@@ -12,7 +13,7 @@
 	</ItemGroup>
 
 	<ItemGroup>
-	  <PackageReference Include="TqkLibrary.AudioPlayer.XAudio2" Version="1.0.1" />
+	  <PackageReference Include="TqkLibrary.AudioPlayer.XAudio2" Version="1.1.0" />
 	</ItemGroup>
 
 </Project>

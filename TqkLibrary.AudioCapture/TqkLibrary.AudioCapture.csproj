@@ -5,7 +5,29 @@
 		<ImplicitUsings>enable</ImplicitUsings>
 		<Nullable>enable</Nullable>
 		<LangVersion>12.0</LangVersion>
-        <Platforms>AnyCPU;x64;x86</Platforms>
+		<Platforms>AnyCPU;x64;x86</Platforms>
 	</PropertyGroup>
-	
+
+	<ItemGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|x86'">
+		<None Include="..\x86\Debug\TqkLibrary.AudioCapture.Native.dll" Link="runtimes\win-x86\native\TqkLibrary.AudioCapture.Native.dll">
+			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		</None>
+		<None Include="..\x86\Debug\TqkLibrary.AudioCapture.Native.pdb" Link="runtimes\win-x86\native\TqkLibrary.AudioCapture.Native.pdb">
+			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		</None>
+	</ItemGroup>
+	<ItemGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|x64'">
+		<None Include="..\x64\Debug\TqkLibrary.AudioCapture.Native.dll" Link="runtimes\win-x64\native\TqkLibrary.AudioCapture.Native.dll">
+			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		</None>
+		<None Include="..\x64\Debug\TqkLibrary.AudioCapture.Native.pdb" Link="runtimes\win-x64\native\TqkLibrary.AudioCapture.Native.pdb">
+			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		</None>
+	</ItemGroup>
+
+
+	<ItemGroup>
+		<PackageReference Include="TqkLibrary.CompilerServices" Version="1.0.0.3" />
+	</ItemGroup>
+
 </Project>

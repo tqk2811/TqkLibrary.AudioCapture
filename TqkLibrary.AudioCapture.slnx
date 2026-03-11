@@ -1,10 +1,15 @@
 <Solution>
   <Configurations>
-    <Platform Name="Any CPU" />
     <Platform Name="x64" />
     <Platform Name="x86" />
   </Configurations>
-  <Project Path="ConsoleTest/ConsoleTest.csproj" Id="5cbfd649-3f8f-4a87-a0c7-eede8ebe0516" />
+  <Project Path="ConsoleTest/ConsoleTest.csproj" Id="5cbfd649-3f8f-4a87-a0c7-eede8ebe0516">
+    <Platform Solution="Debug|x64" Project="x64" />
+  </Project>
   <Project Path="TqkLibrary.AudioCapture.Native/TqkLibrary.AudioCapture.Native.vcxproj" Id="63acb146-144e-486a-84ec-8fe4860dc948" />
-  <Project Path="TqkLibrary.AudioCapture/TqkLibrary.AudioCapture.csproj" />
+  <Project Path="TqkLibrary.AudioCapture/TqkLibrary.AudioCapture.csproj">
+    <BuildDependency Project="TqkLibrary.AudioCapture.Native/TqkLibrary.AudioCapture.Native.vcxproj" />
+    <Platform Solution="Debug|x64" Project="x64" />
+    <Platform Solution="Debug|x86" Project="x86" />
+  </Project>
 </Solution>
