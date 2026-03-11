@@ -1,4 +1,4 @@
-﻿using System.Diagnostics;
+using System.Diagnostics;
 using TqkLibrary.AudioCapture;
 using TqkLibrary.AudioCapture.Enums;
 using TqkLibrary.AudioCapture.Models;
@@ -18,7 +18,7 @@ namespace ConsoleTest
                 Console.WriteLine("\n=== TqkLibrary.AudioCapture Test ===");
                 Console.WriteLine("1. List Audio Endpoints (Output)");
                 Console.WriteLine("2. List Audio Endpoints (Input)");
-                Console.WriteLine("3. List Audio Sessions (Default Device)");
+                Console.WriteLine("3. List Audio Sessions (All Output Devices)");
                 Console.WriteLine("4. Capture from Endpoint");
                 Console.WriteLine("5. Capture from Process");
                 Console.WriteLine("0. Exit");
@@ -51,23 +51,40 @@ namespace ConsoleTest
 
         static void ListSessions(AudioCapture capture)
         {
-            var sessions = capture.GetSessions();
-            Console.WriteLine($"\nFound {sessions.Count} sessions on default device:");
-            foreach (var s in sessions)
+            var endpoints = capture.GetEndpoints(DataFlow.Render);
+            Console.WriteLine($"\nListing sessions from all {endpoints.Count} output devices:");
+            foreach (var ep in endpoints)
             {
-                Console.WriteLine($"- [{s.State}] PID: {s.ProcessId} | Name: {s.DisplayName}");
-                Console.WriteLine($"  ID: {s.SessionId}");
+                Console.WriteLine($"\n--- Device: {ep.FriendlyName} [{ep.State}] ---");
+                Console.WriteLine($"    ID: {ep.DeviceId}");
+                var sessions = capture.GetSessions(ep.DeviceId);
+                if (sessions.Count == 0)
+                {
+                    Console.WriteLine("    (No sessions)");
+                }
+                else
+                {
+                    foreach (var s in sessions)
+                    {
+                        Console.WriteLine($"  - [{s.State}] PID: {s.ProcessId} | Name: {s.DisplayName}");
+                        Console.WriteLine($"    ID: {s.SessionId}");
+                    }
+                }
             }
         }
 
         static void CaptureFromEndpoint(AudioCapture capture)
         {
-            var endpoints = capture.GetEndpoints(DataFlow.Render);
-            ListEndpoints(capture, DataFlow.Render);
-            Console.Write("\nSelect device index: ");
-            if (int.TryParse(Console.ReadLine(), out int idx) && idx >= 0 && idx < endpoints.Count)
+            Console.Write("\nEnter Device ID (empty for default): ");
+            string? deviceId = Console.ReadLine();
+            if (string.IsNullOrWhiteSpace(deviceId)) deviceId = null;
+            try
             {
-                RunCapture(capture.CaptureEndpoint(endpoints[idx]));
+                RunCapture(capture.CaptureEndpoint(deviceId));
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error: {ex.Message}");
             }
         }
 
