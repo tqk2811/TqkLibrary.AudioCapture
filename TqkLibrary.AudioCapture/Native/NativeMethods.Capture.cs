@@ -9,7 +9,7 @@ namespace TqkLibrary.AudioCapture.Native
         internal static extern IntPtr Capture_StartEndpoint(string? deviceId);
 
         [DllImport(_dllName, CallingConvention = CallingConvention.Cdecl)]
-        internal static extern IntPtr Capture_StartProcess(int processId);
+        internal static extern IntPtr Capture_StartProcess(int processId, int channels, int sampleRate, int bitsPerSample);
 
         [DllImport(_dllName, CallingConvention = CallingConvention.Cdecl)]
         internal static extern bool Capture_GetFormat(IntPtr ctx, out uint channels, out uint sampleRate, out uint bitsPerSample);

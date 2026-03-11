@@ -13,7 +13,7 @@
 using namespace Microsoft::WRL;
 
 class ActivateAudioInterfaceCompletionHandler :
-	public RuntimeClass<RuntimeClassFlags<ClassicCom>, IActivateAudioInterfaceCompletionHandler>
+	public RuntimeClass<RuntimeClassFlags<ClassicCom>, FtmBase, IActivateAudioInterfaceCompletionHandler>
 {
 public:
 	ActivateAudioInterfaceCompletionHandler() : _hEvent(CreateEvent(NULL, FALSE, FALSE, NULL)) {}
@@ -88,7 +88,7 @@ end:
 	}
 }
 
-void* Capture_StartProcess(int processId) {
+void* Capture_StartProcess(int processId, int channels, int sampleRate, int bitsPerSample) {
 	if (FAILED(EnsureCoInitialized()))
 		return nullptr;
 
@@ -124,11 +124,30 @@ void* Capture_StartProcess(int processId) {
 	if (FAILED(hr))
 		goto end;
 
-	hr = ctx->pAudioClient->GetMixFormat(&ctx->pFormat);
-	if (FAILED(hr))
+	// Process loopback IAudioClient does not support GetMixFormat (returns E_NOTIMPL).
+	// Manually specify desired capture format and use AUTOCONVERTPCM for automatic conversion.
+	ctx->pFormat = (WAVEFORMATEX*)CoTaskMemAlloc(sizeof(WAVEFORMATEX));
+	if (!ctx->pFormat)
+	{
+		hr = E_OUTOFMEMORY;
 		goto end;
+	}
+	ctx->pFormat->wFormatTag = WAVE_FORMAT_PCM;
+	ctx->pFormat->nChannels = (WORD)channels;
+	ctx->pFormat->nSamplesPerSec = (DWORD)sampleRate;
+	ctx->pFormat->wBitsPerSample = (WORD)bitsPerSample;
+	ctx->pFormat->nBlockAlign = ctx->pFormat->nChannels * ctx->pFormat->wBitsPerSample / 8;
+	ctx->pFormat->nAvgBytesPerSec = ctx->pFormat->nSamplesPerSec * ctx->pFormat->nBlockAlign;
+	ctx->pFormat->cbSize = 0;
 
-	hr = ctx->pAudioClient->Initialize(AUDCLNT_SHAREMODE_SHARED, AUDCLNT_STREAMFLAGS_LOOPBACK, 0, 0, ctx->pFormat, NULL);
+	hr = ctx->pAudioClient->Initialize(
+		AUDCLNT_SHAREMODE_SHARED,
+		AUDCLNT_STREAMFLAGS_LOOPBACK | AUDCLNT_STREAMFLAGS_AUTOCONVERTPCM,
+		0, 
+		0, 
+		ctx->pFormat, 
+		NULL
+	);
 	if (FAILED(hr))
 		goto end;
 

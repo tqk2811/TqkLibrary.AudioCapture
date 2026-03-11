@@ -109,17 +109,17 @@ namespace TqkLibrary.AudioCapture
             return CaptureEndpoint(endpoint.DeviceId);
         }
 
-        public AudioCaptureStream CaptureProcess(int processId)
+        public AudioCaptureStream CaptureProcess(int processId, int channels = 2, int sampleRate = 44100, int bitsPerSample = 16)
         {
-            IntPtr ptr = NativeMethods.Capture_StartProcess(processId);
+            IntPtr ptr = NativeMethods.Capture_StartProcess(processId, channels, sampleRate, bitsPerSample);
             if (ptr == IntPtr.Zero) throw new InvalidOperationException($"Failed to start process capture for PID {processId}.");
             return new AudioCaptureStream(ptr);
         }
 
-        public AudioCaptureStream CaptureProcess(AudioSessionInfo session)
+        public AudioCaptureStream CaptureProcess(AudioSessionInfo session, int channels = 2, int sampleRate = 44100, int bitsPerSample = 16)
         {
             if (session == null) throw new ArgumentNullException(nameof(session));
-            return CaptureProcess(session.ProcessId);
+            return CaptureProcess(session.ProcessId, channels, sampleRate, bitsPerSample);
         }
 
         public void Dispose()
