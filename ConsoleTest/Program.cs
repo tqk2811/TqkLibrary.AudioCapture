@@ -108,8 +108,19 @@ namespace ConsoleTest
         {
             using (stream)
             {
-                Console.Write("\nEnable Live Monitor (Playback)? (y/n): ");
-                bool enablePlayback = Console.ReadLine()?.ToLower() == "y";
+                var devices = XAudio2Engine.GetAudioDevices().ToList();
+                Console.WriteLine("Available Output Devices:");
+                for (int i = 0; i < devices.Count; i++)
+                {
+                    Console.WriteLine($"[{i}] {devices[i].DeviceName}");
+                }
+                Console.Write("Select device: ");
+                string? selectedDeviceId = null;
+                if (int.TryParse(Console.ReadLine()?.Trim(), out int parsedIndex))
+                {
+                    selectedDeviceId = devices.Skip(parsedIndex).FirstOrDefault().DeviceId;
+                }
+
 
                 int channels = stream.Channels;
                 int sampleRate = stream.SampleRate;
@@ -118,33 +129,20 @@ namespace ConsoleTest
                 Console.WriteLine($"\nStarting capture: {stream.Format}");
                 Console.WriteLine("Press any key to stop...");
 
-                string fileName = $"capture_{DateTime.Now:yyyyMMdd_HHmmss}.raw";
-                using var fs = File.Create(fileName);
                 byte[] buffer = new byte[stream.Format.BytesPerSecond / 10]; // 100ms buffer
 
-                XAudio2Engine? engine = null;
-                XAudio2MasterVoice? masterVoice = null;
-                XAudio2SourceVoice? sourceVoice = null;
 
-                if (enablePlayback)
-                {
-                    try
-                    {
-                        engine = new XAudio2Engine();
-                        masterVoice = engine.CreateMasterVoice(channels, sampleRate);
-                        sourceVoice = masterVoice.CreateSourceVoice(
-                            channels,
-                            sampleRate,
-                            bitsPerSample,
-                            false);
-                        sourceVoice.Start();
-                    }
-                    catch (Exception ex)
-                    {
-                        Console.WriteLine($"Failed to init XAudio2: {ex.Message}");
-                        enablePlayback = false;
-                    }
-                }
+
+                XAudio2Engine engine = new XAudio2Engine();
+                XAudio2MasterVoice masterVoice = engine.CreateMasterVoice(channels, sampleRate, selectedDeviceId);
+                masterVoice.SetVolume(0.1f);
+                XAudio2SourceVoice sourceVoice = masterVoice.CreateSourceVoice(
+                    channels,
+                    sampleRate,
+                    bitsPerSample,
+                    false
+                    );
+                sourceVoice.Start();
 
                 Stopwatch sw = Stopwatch.StartNew();
                 CancellationTokenSource cts = new CancellationTokenSource();
@@ -157,47 +155,29 @@ namespace ConsoleTest
                             int read = stream.Read(buffer, 0, buffer.Length);
                             if (read > 0)
                             {
-                                fs.Write(buffer, 0, read);
-                                if (enablePlayback && sourceVoice != null)
+                                QueueResult queueResult;
+                                do
                                 {
-                                    byte[] dataToQueue;
-                                    if (read == buffer.Length)
+                                    queueResult = sourceVoice.QueueFrame(buffer.Take(read).ToArray(), false);
+                                    if (queueResult == QueueResult.QueueFull)
                                     {
-                                        dataToQueue = buffer;
+                                        await Task.Delay(0, cts.Token);
                                     }
-                                    else
-                                    {
-                                        dataToQueue = new byte[read];
-                                        Buffer.BlockCopy(buffer, 0, dataToQueue, 0, read);
-                                    }
+                                }
+                                while (queueResult == QueueResult.QueueFull && !cts.Token.IsCancellationRequested);
 
-                                    QueueResult queueResult;
-                                    do
-                                    {
-                                        queueResult = sourceVoice.QueueFrame(dataToQueue, false);
-                                        if (queueResult == QueueResult.QueueFull)
-                                        {
-                                            await Task.Delay(10, cts.Token);
-                                        }
-                                    } while (queueResult == QueueResult.QueueFull && !cts.Token.IsCancellationRequested);
-
-                                    if (queueResult == QueueResult.Failed)
-                                    {
-                                        Console.WriteLine("QueueFrame Failed");
-                                        break;
-                                    }
+                                if (queueResult == QueueResult.Failed)
+                                {
+                                    Console.WriteLine("QueueFrame Failed");
+                                    break;
                                 }
                             }
                             else
                             {
-                                await Task.Delay(10, cts.Token);
+                                await Task.Delay(0, cts.Token);
                             }
                         }
-
-                        if (enablePlayback && sourceVoice != null)
-                        {
-                            sourceVoice.QueueFrame(Array.Empty<byte>(), true);
-                        }
+                        sourceVoice.QueueFrame(Array.Empty<byte>(), true);
                     }
                     catch (OperationCanceledException) { }
                     catch (Exception ex)
@@ -208,7 +188,7 @@ namespace ConsoleTest
 
                 while (!Console.KeyAvailable && !captureTask.IsCompleted)
                 {
-                    Console.Write($"\rCaptured: {sw.Elapsed:hh\\:mm\\:ss} | Size: {fs.Length / 1024.0 / 1024.0:F2} MB    ");
+                    Console.Write($"\rCaptured: {sw.Elapsed:hh\\:mm\\:ss}");
                     Thread.Sleep(500);
                 }
 
@@ -223,8 +203,6 @@ namespace ConsoleTest
                 sourceVoice?.Dispose();
                 masterVoice?.Dispose();
                 engine?.Dispose();
-
-                Console.WriteLine($"\nStopped. Saved to {fileName}");
             }
         }
     }
