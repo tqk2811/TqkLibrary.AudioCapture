@@ -1,16 +1,13 @@
-using System;
-using System.Collections.Generic;
 using TqkLibrary.AudioCapture.Enums;
-using TqkLibrary.AudioCapture.Interfaces;
 using TqkLibrary.AudioCapture.Models;
 using TqkLibrary.AudioCapture.Native;
 using TqkLibrary.AudioCapture.Streams;
 
 namespace TqkLibrary.AudioCapture
 {
-    public class AudioCapture : IAudioCapture
+    public static class WindowAudioCapture
     {
-        public IReadOnlyList<AudioEndpointInfo> GetEndpoints(DataFlow dataFlow = DataFlow.Render)
+        public static IReadOnlyList<AudioEndpointInfo> GetEndpoints(DataFlow dataFlow = DataFlow.Render)
         {
             IntPtr ctx = NativeMethods.EnumEndpoints_Create((int)dataFlow);
             if (ctx == IntPtr.Zero) return Array.Empty<AudioEndpointInfo>();
@@ -52,7 +49,7 @@ namespace TqkLibrary.AudioCapture
             }
         }
 
-        public IReadOnlyList<AudioSessionInfo> GetSessions(string? deviceId = null)
+        public static IReadOnlyList<AudioSessionInfo> GetSessions(string? deviceId = null)
         {
             IntPtr ctx = NativeMethods.EnumSessions_Create(deviceId);
             if (ctx == IntPtr.Zero) return Array.Empty<AudioSessionInfo>();
@@ -96,35 +93,30 @@ namespace TqkLibrary.AudioCapture
             }
         }
 
-        public AudioCaptureStream CaptureEndpoint(string? deviceId = null)
+        public static AudioCaptureStream CaptureEndpoint(string? deviceId = null)
         {
             IntPtr ptr = NativeMethods.Capture_StartEndpoint(deviceId);
             if (ptr == IntPtr.Zero) throw new InvalidOperationException("Failed to start endpoint capture.");
             return new AudioCaptureStream(ptr);
         }
 
-        public AudioCaptureStream CaptureEndpoint(AudioEndpointInfo endpoint)
+        public static AudioCaptureStream CaptureEndpoint(this AudioEndpointInfo endpoint)
         {
             if (endpoint == null) throw new ArgumentNullException(nameof(endpoint));
             return CaptureEndpoint(endpoint.DeviceId);
         }
 
-        public AudioCaptureStream CaptureProcess(int processId, int channels = 2, int sampleRate = 44100, int bitsPerSample = 16)
+        public static AudioCaptureStream CaptureProcess(int processId, int channels = 2, int sampleRate = 44100, int bitsPerSample = 16)
         {
             IntPtr ptr = NativeMethods.Capture_StartProcess(processId, channels, sampleRate, bitsPerSample);
             if (ptr == IntPtr.Zero) throw new InvalidOperationException($"Failed to start process capture for PID {processId}.");
             return new AudioCaptureStream(ptr);
         }
 
-        public AudioCaptureStream CaptureProcess(AudioSessionInfo session, int channels = 2, int sampleRate = 44100, int bitsPerSample = 16)
+        public static AudioCaptureStream CaptureProcess(this AudioSessionInfo session, int channels = 2, int sampleRate = 44100, int bitsPerSample = 16)
         {
             if (session == null) throw new ArgumentNullException(nameof(session));
             return CaptureProcess(session.ProcessId, channels, sampleRate, bitsPerSample);
-        }
-
-        public void Dispose()
-        {
-            // Nothing to dispose at this level yet
         }
     }
 }

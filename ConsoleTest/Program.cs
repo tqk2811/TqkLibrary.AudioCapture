@@ -2,6 +2,7 @@ using System.Diagnostics;
 using TqkLibrary.AudioCapture;
 using TqkLibrary.AudioCapture.Enums;
 using TqkLibrary.AudioCapture.Models;
+using TqkLibrary.AudioCapture.Streams;
 using TqkLibrary.AudioPlayer.XAudio2;
 
 namespace ConsoleTest
@@ -10,7 +11,6 @@ namespace ConsoleTest
     {
         static void Main(string[] args)
         {
-            using var capture = new AudioCapture();
             bool exit = false;
 
             while (!exit)
@@ -27,19 +27,19 @@ namespace ConsoleTest
                 string choice = Console.ReadLine() ?? "";
                 switch (choice)
                 {
-                    case "1": ListEndpoints(capture, DataFlow.Render); break;
-                    case "2": ListEndpoints(capture, DataFlow.Capture); break;
-                    case "3": ListSessions(capture); break;
-                    case "4": CaptureFromEndpoint(capture); break;
-                    case "5": CaptureFromProcess(capture); break;
+                    case "1": ListEndpoints(DataFlow.Render); break;
+                    case "2": ListEndpoints(DataFlow.Capture); break;
+                    case "3": ListSessions(); break;
+                    case "4": CaptureFromEndpoint(); break;
+                    case "5": CaptureFromProcess(); break;
                     case "0": exit = true; break;
                 }
             }
         }
 
-        static void ListEndpoints(AudioCapture capture, DataFlow flow)
+        static void ListEndpoints(DataFlow flow)
         {
-            var endpoints = capture.GetEndpoints(flow);
+            var endpoints = WindowAudioCapture.GetEndpoints(flow);
             Console.WriteLine($"\nFound {endpoints.Count} endpoints ({flow}):");
             for (int i = 0; i < endpoints.Count; i++)
             {
@@ -49,15 +49,15 @@ namespace ConsoleTest
             }
         }
 
-        static void ListSessions(AudioCapture capture)
+        static void ListSessions()
         {
-            var endpoints = capture.GetEndpoints(DataFlow.Render);
+            var endpoints = WindowAudioCapture.GetEndpoints(DataFlow.Render);
             Console.WriteLine($"\nListing sessions from all {endpoints.Count} output devices:");
             foreach (var ep in endpoints)
             {
                 Console.WriteLine($"\n--- Device: {ep.FriendlyName} [{ep.State}] ---");
                 Console.WriteLine($"    ID: {ep.DeviceId}");
-                var sessions = capture.GetSessions(ep.DeviceId);
+                var sessions = WindowAudioCapture.GetSessions(ep.DeviceId);
                 if (sessions.Count == 0)
                 {
                     Console.WriteLine("    (No sessions)");
@@ -73,14 +73,14 @@ namespace ConsoleTest
             }
         }
 
-        static void CaptureFromEndpoint(AudioCapture capture)
+        static void CaptureFromEndpoint()
         {
             Console.Write("\nEnter Device ID (empty for default): ");
             string? deviceId = Console.ReadLine();
             if (string.IsNullOrWhiteSpace(deviceId)) deviceId = null;
             try
             {
-                RunCapture(capture.CaptureEndpoint(deviceId));
+                RunCapture(WindowAudioCapture.CaptureEndpoint(deviceId));
             }
             catch (Exception ex)
             {
@@ -88,14 +88,14 @@ namespace ConsoleTest
             }
         }
 
-        static void CaptureFromProcess(AudioCapture capture)
+        static void CaptureFromProcess()
         {
             Console.Write("\nEnter Process ID: ");
             if (int.TryParse(Console.ReadLine(), out int pid))
             {
                 try
                 {
-                    RunCapture(capture.CaptureProcess(pid));
+                    RunCapture(WindowAudioCapture.CaptureProcess(pid));
                 }
                 catch (Exception ex)
                 {
@@ -104,7 +104,7 @@ namespace ConsoleTest
             }
         }
 
-        static void RunCapture(TqkLibrary.AudioCapture.Streams.AudioCaptureStream stream)
+        static void RunCapture(AudioCaptureStream stream)
         {
             using (stream)
             {
@@ -193,7 +193,7 @@ namespace ConsoleTest
                                 await Task.Delay(10, cts.Token);
                             }
                         }
-                        
+
                         if (enablePlayback && sourceVoice != null)
                         {
                             sourceVoice.QueueFrame(Array.Empty<byte>(), true);
@@ -211,13 +211,13 @@ namespace ConsoleTest
                     Console.Write($"\rCaptured: {sw.Elapsed:hh\\:mm\\:ss} | Size: {fs.Length / 1024.0 / 1024.0:F2} MB    ");
                     Thread.Sleep(500);
                 }
-                
+
                 if (!captureTask.IsCompleted)
                 {
                     Console.ReadKey(true);
                     cts.Cancel();
                 }
-                
+
                 captureTask.Wait();
 
                 sourceVoice?.Dispose();
