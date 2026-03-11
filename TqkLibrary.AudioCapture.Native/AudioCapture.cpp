@@ -55,6 +55,17 @@ void* Capture_StartEndpoint(const wchar_t* deviceId) {
 	if (FAILED(hr))
 		return nullptr;
 
+	// Detect endpoint type (render vs capture)
+	ComPtr<IMMEndpoint> pEndpoint;
+	hr = pDevice->QueryInterface(IID_PPV_ARGS(&pEndpoint));
+	if (FAILED(hr))
+		return nullptr;
+
+	EDataFlow dataFlow;
+	hr = pEndpoint->GetDataFlow(&dataFlow);
+	if (FAILED(hr))
+		return nullptr;
+
 	auto ctx = new CaptureContext();
 
 	hr = pDevice->Activate(__uuidof(IAudioClient), CLSCTX_ALL, NULL, &ctx->pAudioClient);
@@ -65,10 +76,14 @@ void* Capture_StartEndpoint(const wchar_t* deviceId) {
 	if (FAILED(hr))
 		goto end;
 
-	// Use loopback capture
-	hr = ctx->pAudioClient->Initialize(AUDCLNT_SHAREMODE_SHARED, AUDCLNT_STREAMFLAGS_LOOPBACK, 0, 0, ctx->pFormat, NULL);
-	if (FAILED(hr))
-		goto end;
+	{
+		// AUDCLNT_STREAMFLAGS_LOOPBACK is only valid for render endpoints (speakers/headphones)
+		// For capture endpoints (microphones), no special flags are needed
+		DWORD streamFlags = (dataFlow == eRender) ? AUDCLNT_STREAMFLAGS_LOOPBACK : 0;
+		hr = ctx->pAudioClient->Initialize(AUDCLNT_SHAREMODE_SHARED, streamFlags, 0, 0, ctx->pFormat, NULL);
+		if (FAILED(hr))
+			goto end;
+	}
 
 	hr = ctx->pAudioClient->GetService(IID_PPV_ARGS(&ctx->pCaptureClient));
 	if (FAILED(hr))
