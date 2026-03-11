@@ -34,7 +34,7 @@ private:
 	ComPtr<IActivateAudioInterfaceAsyncOperation> _operation;
 };
 
-void* Capture_StartEndpoint(const wchar_t* deviceId) {
+void* Capture_StartEndpoint(const wchar_t* deviceId, int formatTag, int channels, int sampleRate, int bitsPerSample) {
 	if (FAILED(EnsureCoInitialized()))
 		return nullptr;
 
@@ -66,21 +66,49 @@ void* Capture_StartEndpoint(const wchar_t* deviceId) {
 	if (FAILED(hr))
 		return nullptr;
 
+	bool useCustomFormat = (channels > 0 && sampleRate > 0 && bitsPerSample > 0);
 	auto ctx = new CaptureContext();
 
 	hr = pDevice->Activate(__uuidof(IAudioClient), CLSCTX_ALL, NULL, &ctx->pAudioClient);
 	if (FAILED(hr))
 		goto end;
 
-	hr = ctx->pAudioClient->GetMixFormat(&ctx->pFormat);
-	if (FAILED(hr))
-		goto end;
+	if (useCustomFormat)
+	{
+		// Use explicit PCM format with AUTOCONVERTPCM for noise-free conversion
+		ctx->pFormat = (WAVEFORMATEX*)CoTaskMemAlloc(sizeof(WAVEFORMATEX));
+		if (!ctx->pFormat)
+		{
+			hr = E_OUTOFMEMORY;
+			goto end;
+		}
+		ctx->pFormat->wFormatTag = (WORD)formatTag; // Usually WAVE_FORMAT_PCM (1) or WAVE_FORMAT_IEEE_FLOAT (3)
+		ctx->pFormat->nChannels = (WORD)channels;
+		ctx->pFormat->nSamplesPerSec = (DWORD)sampleRate;
+		ctx->pFormat->wBitsPerSample = (WORD)bitsPerSample;
+		ctx->pFormat->nBlockAlign = ctx->pFormat->nChannels * ctx->pFormat->wBitsPerSample / 8;
+		ctx->pFormat->nAvgBytesPerSec = ctx->pFormat->nSamplesPerSec * ctx->pFormat->nBlockAlign;
+		ctx->pFormat->cbSize = 0;
+	}
+	else
+	{
+		// Use device native format (may be IEEE Float 32-bit)
+		hr = ctx->pAudioClient->GetMixFormat(&ctx->pFormat);
+		if (FAILED(hr))
+			goto end;
+	}
 
 	{
 		// AUDCLNT_STREAMFLAGS_LOOPBACK is only valid for render endpoints (speakers/headphones)
 		// For capture endpoints (microphones), no special flags are needed
 		DWORD streamFlags = (dataFlow == eRender) ? AUDCLNT_STREAMFLAGS_LOOPBACK : 0;
-		hr = ctx->pAudioClient->Initialize(AUDCLNT_SHAREMODE_SHARED, streamFlags, 0, 0, ctx->pFormat, NULL);
+		if (useCustomFormat)
+		{
+			// Auto convert from device native format to our requested PCM format
+			streamFlags |= AUDCLNT_STREAMFLAGS_AUTOCONVERTPCM | AUDCLNT_STREAMFLAGS_SRC_DEFAULT_QUALITY;
+		}
+		REFERENCE_TIME hnsBufferDuration = 200000; // 20ms buffer
+		hr = ctx->pAudioClient->Initialize(AUDCLNT_SHAREMODE_SHARED, streamFlags, hnsBufferDuration, 0, ctx->pFormat, NULL);
 		if (FAILED(hr))
 			goto end;
 	}
@@ -103,9 +131,11 @@ end:
 	}
 }
 
-void* Capture_StartProcess(int processId, int channels, int sampleRate, int bitsPerSample) {
+void* Capture_StartProcess(int processId, int formatTag, int channels, int sampleRate, int bitsPerSample) {
 	if (FAILED(EnsureCoInitialized()))
 		return nullptr;
+
+	REFERENCE_TIME hnsBufferDuration = 200000; // 20ms buffer
 
 	AUDIOCLIENT_ACTIVATION_PARAMS params = { };
 	params.ActivationType = AUDIOCLIENT_ACTIVATION_TYPE_PROCESS_LOOPBACK;
@@ -147,7 +177,7 @@ void* Capture_StartProcess(int processId, int channels, int sampleRate, int bits
 		hr = E_OUTOFMEMORY;
 		goto end;
 	}
-	ctx->pFormat->wFormatTag = WAVE_FORMAT_PCM;
+	ctx->pFormat->wFormatTag = (WORD)formatTag; // Usually WAVE_FORMAT_PCM (1) or WAVE_FORMAT_IEEE_FLOAT (3)
 	ctx->pFormat->nChannels = (WORD)channels;
 	ctx->pFormat->nSamplesPerSec = (DWORD)sampleRate;
 	ctx->pFormat->wBitsPerSample = (WORD)bitsPerSample;
@@ -157,8 +187,8 @@ void* Capture_StartProcess(int processId, int channels, int sampleRate, int bits
 
 	hr = ctx->pAudioClient->Initialize(
 		AUDCLNT_SHAREMODE_SHARED,
-		AUDCLNT_STREAMFLAGS_LOOPBACK | AUDCLNT_STREAMFLAGS_AUTOCONVERTPCM,
-		0, 
+		AUDCLNT_STREAMFLAGS_LOOPBACK | AUDCLNT_STREAMFLAGS_AUTOCONVERTPCM | AUDCLNT_STREAMFLAGS_SRC_DEFAULT_QUALITY,
+		hnsBufferDuration, 
 		0, 
 		ctx->pFormat, 
 		NULL
@@ -222,8 +252,9 @@ int Capture_Read(void* ctx, unsigned char* buffer, int bufferSize) {
 	int bytesAvailable = numFramesAvailable * c->pFormat->nBlockAlign;
 	int bytesToCopy = (bytesAvailable < bufferSize) ? bytesAvailable : bufferSize;
 
-	if (flags & AUDCLNT_BUFFERFLAGS_SILENT)
+	if ((flags & AUDCLNT_BUFFERFLAGS_SILENT) || (flags & AUDCLNT_BUFFERFLAGS_DATA_DISCONTINUITY))
 	{
+		// Silent or discontinuity -> return silence to avoid noise
 		memset(buffer, 0, bytesToCopy);
 	}
 	else

@@ -93,30 +93,30 @@ namespace TqkLibrary.AudioCapture
             }
         }
 
-        public static AudioCaptureStream CaptureEndpoint(string? deviceId = null)
+        public static AudioCaptureStream CaptureEndpoint(string? deviceId = null, AudioFormatTag formatTag = AudioFormatTag.PCM, int channels = 2, int sampleRate = 44100, int bitsPerSample = 16)
         {
-            IntPtr ptr = NativeMethods.Capture_StartEndpoint(deviceId);
+            IntPtr ptr = NativeMethods.Capture_StartEndpoint(deviceId, (int)formatTag, channels, sampleRate, bitsPerSample);
             if (ptr == IntPtr.Zero) throw new InvalidOperationException("Failed to start endpoint capture.");
             return new AudioCaptureStream(ptr);
         }
 
-        public static AudioCaptureStream CaptureEndpoint(this AudioEndpointInfo endpoint)
+        public static AudioCaptureStream CaptureEndpoint(this AudioEndpointInfo endpoint, AudioFormatTag formatTag = AudioFormatTag.PCM, int channels = 2, int sampleRate = 44100, int bitsPerSample = 16)
         {
             if (endpoint == null) throw new ArgumentNullException(nameof(endpoint));
-            return CaptureEndpoint(endpoint.DeviceId);
+            return CaptureEndpoint(endpoint.DeviceId, formatTag, channels, sampleRate, bitsPerSample);
         }
 
-        public static AudioCaptureStream CaptureProcess(int processId, int channels = 2, int sampleRate = 44100, int bitsPerSample = 16)
+        public static AudioCaptureStream CaptureProcess(int processId, AudioFormatTag formatTag = AudioFormatTag.PCM, int channels = 2, int sampleRate = 44100, int bitsPerSample = 16)
         {
-            IntPtr ptr = NativeMethods.Capture_StartProcess(processId, channels, sampleRate, bitsPerSample);
+            IntPtr ptr = NativeMethods.Capture_StartProcess(processId, (int)formatTag, channels, sampleRate, bitsPerSample);
             if (ptr == IntPtr.Zero) throw new InvalidOperationException($"Failed to start process capture for PID {processId}.");
             return new AudioCaptureStream(ptr);
         }
 
-        public static AudioCaptureStream CaptureProcess(this AudioSessionInfo session, int channels = 2, int sampleRate = 44100, int bitsPerSample = 16)
+        public static AudioCaptureStream CaptureProcess(this AudioSessionInfo session, AudioFormatTag formatTag = AudioFormatTag.PCM, int channels = 2, int sampleRate = 44100, int bitsPerSample = 16)
         {
             if (session == null) throw new ArgumentNullException(nameof(session));
-            return CaptureProcess(session.ProcessId, channels, sampleRate, bitsPerSample);
+            return CaptureProcess(session.ProcessId, formatTag, channels, sampleRate, bitsPerSample);
         }
     }
 }

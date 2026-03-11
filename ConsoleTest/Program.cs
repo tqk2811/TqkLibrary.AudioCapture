@@ -80,7 +80,7 @@ namespace ConsoleTest
             if (string.IsNullOrWhiteSpace(deviceId)) deviceId = null;
             try
             {
-                RunCapture(WindowAudioCapture.CaptureEndpoint(deviceId));
+                RunCapture(WindowAudioCapture.CaptureEndpoint(deviceId, formatTag: AudioFormatTag.PCM, channels: 2, sampleRate: 44100, bitsPerSample: 16));
             }
             catch (Exception ex)
             {
@@ -95,7 +95,7 @@ namespace ConsoleTest
             {
                 try
                 {
-                    RunCapture(WindowAudioCapture.CaptureProcess(pid));
+                    RunCapture(WindowAudioCapture.CaptureProcess(pid, formatTag: AudioFormatTag.PCM, channels: 2, sampleRate: 44100, bitsPerSample: 16));
                 }
                 catch (Exception ex)
                 {
@@ -135,12 +135,12 @@ namespace ConsoleTest
 
                 XAudio2Engine engine = new XAudio2Engine();
                 XAudio2MasterVoice masterVoice = engine.CreateMasterVoice(channels, sampleRate, selectedDeviceId);
-                masterVoice.SetVolume(0.1f);
+                //masterVoice.SetVolume(0.2f);
                 XAudio2SourceVoice sourceVoice = masterVoice.CreateSourceVoice(
                     channels,
                     sampleRate,
                     bitsPerSample,
-                    false
+                    WaveFormatTag.WAVE_FORMAT_PCM
                     );
                 sourceVoice.Start();
 
@@ -161,7 +161,7 @@ namespace ConsoleTest
                                     queueResult = sourceVoice.QueueFrame(buffer.Take(read).ToArray(), false);
                                     if (queueResult == QueueResult.QueueFull)
                                     {
-                                        await Task.Delay(0, cts.Token);
+                                        await Task.Delay(10, cts.Token);
                                     }
                                 }
                                 while (queueResult == QueueResult.QueueFull && !cts.Token.IsCancellationRequested);
@@ -174,7 +174,7 @@ namespace ConsoleTest
                             }
                             else
                             {
-                                await Task.Delay(0, cts.Token);
+                                await Task.Delay(10, cts.Token);
                             }
                         }
                         sourceVoice.QueueFrame(Array.Empty<byte>(), true);

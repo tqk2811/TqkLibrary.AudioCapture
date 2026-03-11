@@ -13,7 +13,7 @@
 	</ItemGroup>
 
 	<ItemGroup>
-	  <PackageReference Include="TqkLibrary.AudioPlayer.XAudio2" Version="1.1.1" />
+	  <PackageReference Include="TqkLibrary.AudioPlayer.XAudio2" Version="1.1.2" />
 	</ItemGroup>
 
 </Project>
