@@ -215,13 +215,14 @@ end:
 	}
 }
 
-bool Capture_GetFormat(void* ctx, unsigned int* channels, unsigned int* sampleRate, unsigned int* bitsPerSample) {
+bool Capture_GetFormat(void* ctx, unsigned int* formatTag, unsigned int* channels, unsigned int* sampleRate, unsigned int* bitsPerSample) {
 	if (!ctx)
 		return false;
 	auto c = static_cast<CaptureContext*>(ctx);
 	if (!c->pFormat)
 		return false;
 
+	if (formatTag) *formatTag = c->pFormat->wFormatTag;
 	if (channels) *channels = c->pFormat->nChannels;
 	if (sampleRate) *sampleRate = c->pFormat->nSamplesPerSec;
 	if (bitsPerSample) *bitsPerSample = c->pFormat->wBitsPerSample;

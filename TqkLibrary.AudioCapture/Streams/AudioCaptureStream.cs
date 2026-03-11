@@ -1,5 +1,6 @@
 using System;
 using System.IO;
+using TqkLibrary.AudioCapture.Enums;
 using TqkLibrary.AudioCapture.Models;
 using TqkLibrary.AudioCapture.Native;
 
@@ -10,6 +11,7 @@ namespace TqkLibrary.AudioCapture.Streams
         private IntPtr _ptrContext;
         public AudioFormat Format { get; }
 
+        public AudioFormatTag FormatTag => Format.FormatTag;
         public int Channels => Format.Channels;
         public int SampleRate => Format.SampleRate;
         public int BitsPerSample => Format.BitsPerSample;
@@ -19,10 +21,11 @@ namespace TqkLibrary.AudioCapture.Streams
             if (ptrContext == IntPtr.Zero) throw new ArgumentNullException(nameof(ptrContext));
             _ptrContext = ptrContext;
 
-            if (NativeMethods.Capture_GetFormat(_ptrContext, out uint channels, out uint sampleRate, out uint bitsPerSample))
+            if (NativeMethods.Capture_GetFormat(_ptrContext, out uint formatTag, out uint channels, out uint sampleRate, out uint bitsPerSample))
             {
                 Format = new AudioFormat
                 {
+                    FormatTag = (TqkLibrary.AudioCapture.Enums.AudioFormatTag)formatTag,
                     Channels = (int)channels,
                     SampleRate = (int)sampleRate,
                     BitsPerSample = (int)bitsPerSample
