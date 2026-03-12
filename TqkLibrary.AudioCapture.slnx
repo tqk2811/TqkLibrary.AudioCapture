@@ -3,6 +3,9 @@
     <Platform Name="x64" />
     <Platform Name="x86" />
   </Configurations>
+  <Folder Name="/Solution Items/">
+    <File Path="BuildPush.ps1" />
+  </Folder>
   <Project Path="ConsoleTest/ConsoleTest.csproj" Id="5cbfd649-3f8f-4a87-a0c7-eede8ebe0516">
     <Platform Solution="Debug|x64" Project="x64" />
   </Project>
