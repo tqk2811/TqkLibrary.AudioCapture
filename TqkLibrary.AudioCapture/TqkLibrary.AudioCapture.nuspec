@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<package xmlns="http://schemas.microsoft.com/asset/2010/07/nuspec.xsd">
+<package xmlns="http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd">
 	<metadata>
 		<id>TqkLibrary.AudioCapture</id>
 		<version>1.0.0</version>
@@ -19,6 +19,10 @@
 			<group targetFramework="net8.0-windows7.0">
 			</group>
 		</dependencies>
+		
+		<contentFiles>
+			<files include="**/*.*" copyToOutput="true" buildAction="None"/>
+		</contentFiles>
 	</metadata>
 	<files>
 		<file src="bin\Release\**\TqkLibrary.AudioCapture.dll" target="lib\" />
