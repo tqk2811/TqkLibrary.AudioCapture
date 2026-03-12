@@ -8,9 +8,16 @@
 		<projectUrl>https://github.com/tqk2811/TqkLibrary.AudioCapture</projectUrl>
 		<repository type="git" url="https://github.com/tqk2811/TqkLibrary.AudioCapture.git"/>
 		<license type="expression">MIT</license>
+		<readme>docs\README.md</readme>
 		<dependencies>
-			<group targetFramework=".NETFramework4.6.2" />
-			<group targetFramework="net8.0-windows7.0" />
+			<group targetFramework="net462">
+			</group>
+			<group targetFramework="net5.0-windows7.0">
+			</group>
+			<group targetFramework="net6.0-windows7.0">
+			</group>
+			<group targetFramework="net8.0-windows7.0">
+			</group>
 		</dependencies>
 	</metadata>
 	<files>

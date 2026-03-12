@@ -3,8 +3,8 @@ Remove-Item -Recurse -Force .\x86\Release\** -ErrorAction SilentlyContinue
 Remove-Item -Recurse -Force .\TqkLibrary.AudioCapture\bin\Release\** -ErrorAction SilentlyContinue
 
 $env:PATH="$($env:PATH);C:\Program Files\Microsoft Visual Studio\2022\Community\Common7\IDE;C:\Program Files\Microsoft Visual Studio\18\Community\Common7\IDE"
-devenv .\TqkLibrary.AudioCapture.sln /Rebuild 'Release|x64' /Project TqkLibrary.AudioCapture.Native
-devenv .\TqkLibrary.AudioCapture.sln /Rebuild 'Release|x86' /Project TqkLibrary.AudioCapture.Native
+devenv .\TqkLibrary.AudioCapture.slnx /Rebuild 'Release|x64' /Project TqkLibrary.AudioCapture.Native
+devenv .\TqkLibrary.AudioCapture.slnx /Rebuild 'Release|x86' /Project TqkLibrary.AudioCapture.Native
 
 dotnet build --no-incremental .\TqkLibrary.AudioCapture\TqkLibrary.AudioCapture.csproj -c Release
 nuget pack .\TqkLibrary.AudioCapture\TqkLibrary.AudioCapture.nuspec -Symbols -OutputDirectory .\TqkLibrary.AudioCapture\bin\Release
