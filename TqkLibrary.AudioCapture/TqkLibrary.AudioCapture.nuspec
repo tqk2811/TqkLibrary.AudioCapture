@@ -5,6 +5,8 @@
 		<version>1.0.0</version>
 		<authors>tqk2811</authors>
 		<description>Audio Capture library for Windows using WASAPI. Supports endpoint and process-specific capture.</description>
+		<projectUrl>https://github.com/tqk2811/TqkLibrary.AudioCapture</projectUrl>
+		<repository type="git" url="https://github.com/tqk2811/TqkLibrary.AudioCapture.git"/>
 		<license type="expression">MIT</license>
 		<dependencies>
 			<group targetFramework=".NETFramework4.6.2" />
