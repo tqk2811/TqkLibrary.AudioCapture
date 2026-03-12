@@ -97,7 +97,16 @@ namespace TqkLibrary.AudioCapture
         {
             IntPtr ptr = NativeMethods.Capture_StartEndpoint(deviceId, (int)formatTag, channels, sampleRate, bitsPerSample);
             if (ptr == IntPtr.Zero) throw new InvalidOperationException("Failed to start endpoint capture.");
-            return new AudioCaptureStream(ptr);
+            try
+            {
+                return new AudioCaptureStream(ptr);
+            }
+            catch
+            {
+                NativeMethods.Capture_Stop(ptr);
+                NativeMethods.Capture_Free(ref ptr);
+                throw;
+            }
         }
 
         public static AudioCaptureStream CaptureEndpoint(this AudioEndpointInfo endpoint, AudioFormatTag formatTag = AudioFormatTag.PCM, int channels = 2, int sampleRate = 44100, int bitsPerSample = 16)
@@ -110,7 +119,16 @@ namespace TqkLibrary.AudioCapture
         {
             IntPtr ptr = NativeMethods.Capture_StartProcess(processId, (int)formatTag, channels, sampleRate, bitsPerSample);
             if (ptr == IntPtr.Zero) throw new InvalidOperationException($"Failed to start process capture for PID {processId}.");
-            return new AudioCaptureStream(ptr);
+            try
+            {
+                return new AudioCaptureStream(ptr);
+            }
+            catch
+            {
+                NativeMethods.Capture_Stop(ptr);
+                NativeMethods.Capture_Free(ref ptr);
+                throw;
+            }
         }
 
         public static AudioCaptureStream CaptureProcess(this AudioSessionInfo session, AudioFormatTag formatTag = AudioFormatTag.PCM, int channels = 2, int sampleRate = 44100, int bitsPerSample = 16)
