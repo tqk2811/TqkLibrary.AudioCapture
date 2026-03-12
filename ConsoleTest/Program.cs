@@ -116,9 +116,9 @@ namespace ConsoleTest
                 }
                 Console.Write("Select device: ");
                 string? selectedDeviceId = null;
-                if (int.TryParse(Console.ReadLine()?.Trim(), out int parsedIndex))
+                if (int.TryParse(Console.ReadLine()?.Trim(), out int parsedIndex) && parsedIndex >= 0 && parsedIndex < devices.Count)
                 {
-                    selectedDeviceId = devices.Skip(parsedIndex).FirstOrDefault().DeviceId;
+                    selectedDeviceId = devices[parsedIndex].DeviceId;
                 }
 
 
