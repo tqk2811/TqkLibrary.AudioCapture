@@ -153,6 +153,10 @@
     <ClInclude Include="AudioEndpointEnum.h" />
     <ClInclude Include="AudioSessionEnum.h" />
     <ClInclude Include="AudioCapture.h" />
+    <ClInclude Include="version.generated.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="version.rc" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="dllmain.cpp" />
