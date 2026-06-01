@@ -2,7 +2,7 @@
 <package xmlns="http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd">
 	<metadata>
 		<id>TqkLibrary.AudioCapture</id>
-		<version>1.0.0</version>
+		<version>$version$</version>
 		<authors>tqk2811</authors>
 		<description>Audio Capture library for Windows using WASAPI. Supports endpoint and process-specific capture.</description>
 		<projectUrl>https://github.com/tqk2811/TqkLibrary.AudioCapture</projectUrl>
