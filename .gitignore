@@ -361,3 +361,7 @@ MigrationBackup/
 
 # Fody - auto-generated XML schema
 FodyWeavers.xsd
+
+# Generated native version header (BuildPush.ps1 writes the real version; the
+# vcxproj EnsureVersionHeader target writes a 0.0.0 fallback when missing)
+version.generated.h

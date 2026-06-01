@@ -172,4 +172,13 @@
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets" />
+  <!-- version.generated.h is git-ignored. Create a 0.0.0 fallback when missing so
+       a clean checkout / IDE build still compiles; BuildPush.ps1 overwrites it with
+       the real GitVersion value before a release build. -->
+  <Target Name="EnsureVersionHeader" BeforeTargets="ResourceCompile">
+    <WriteLinesToFile Condition="!Exists('$(MSBuildProjectDirectory)\version.generated.h')"
+                      File="$(MSBuildProjectDirectory)\version.generated.h"
+                      Overwrite="true"
+                      Lines="#pragma once;#define VER_FILE_MAJOR    0;#define VER_FILE_MINOR    0;#define VER_FILE_BUILD    0;#define VER_FILE_REVISION 0;#define VER_FILEVERSION_STR    &quot;0.0.0.0&quot;;#define VER_PRODUCTVERSION_STR &quot;0.0.0&quot;" />
+  </Target>
 </Project>
